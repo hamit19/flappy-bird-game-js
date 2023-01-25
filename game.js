@@ -2,6 +2,8 @@ var cav = document.getElementById("my-canvas");
 
 var cxt = cav.getContext("2d");
 
+var DEGREE = Math.PI / 180;
+
 var frames = 0;
 
 var sprite = new Image();
@@ -28,6 +30,8 @@ function clickHandler() {
       break;
 
     default:
+      bird.speed = 0;
+      bird.rotation = 0;
       state.current = state.getReady;
       break;
   }
@@ -171,27 +175,69 @@ var bird = {
   h: 26,
   x: 50,
   y: 150,
-
-  animationIndex: 3,
+  speed: 0,
+  gravity: 0.25,
+  jump: 4.6,
+  animationIndex: 0,
+  rotation:0,
 
   draw: function () {
     let bird = this.animations[this.animationIndex];
 
+    cxt.save();
+    cxt.translate(this.x, this.y)
+    cxt.rotate(this.rotation)
     cxt.drawImage(
       sprite,
       bird.sX,
       bird.sY,
       this.w,
       this.h,
-      this.x - this.w / 2,
-      this.y - this.h / 2,
+     - this.w / 2,
+     - this.h / 2,
       this.w,
       this.h
     );
+    cxt.restore()
+  },
+
+  update: function () {
+    let period = state.current === state.getReady ? 10 : 5;
+
+    this.animationIndex += frames % period == 0 ? 1 : 0;
+    this.animationIndex = this.animationIndex % this.animations.length;
+
+    if (state.current === state.getReady) {
+      this.y = 150;
+    } else {
+      this.speed += this.gravity;
+      this.y += this.speed;
+
+      if(this.speed < this.jump){
+        this.rotation = - 25 * DEGREE;
+      }else {
+        this.rotation =  45 * DEGREE;
+      }
+
+    }
+
+    if (this.y + this.h / 2 > cav.height - fg.h) {
+      this.y = cav.height - fg.h - this.h / 2;
+      this.animationIndex = 1;
+      if (state.current === state.game) {
+        state.current = state.over;
+      }
+    }
+  },
+
+  flap: function () {
+    this.speed = - this.jump;
   },
 };
 
-function update() {}
+function update() {
+  bird.update();
+}
 
 function draw() {
   cxt.fillStyle = "#70c5ce";

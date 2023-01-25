@@ -86,6 +86,7 @@ var fg = {
   h: 112,
   x: 0,
   y: cav.height - 112,
+  dx: 3,
 
   draw: function () {
     cxt.drawImage(
@@ -111,6 +112,16 @@ var fg = {
       this.h
     );
   },
+
+  update : function() {
+
+    if(state.current === state.game){
+
+      this.x = ( this.x - this.dx ) % (this.w / 2)
+    }
+
+  }
+ 
 };
 
 var getReady = {
@@ -237,6 +248,7 @@ var bird = {
 
 function update() {
   bird.update();
+  fg.update();
 }
 
 function draw() {

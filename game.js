@@ -32,6 +32,7 @@ function clickHandler() {
     default:
       bird.speed = 0;
       bird.rotation = 0;
+      pipes.position = [];
       state.current = state.getReady;
       break;
   }
@@ -246,9 +247,95 @@ var bird = {
   },
 };
 
+var pipes = {
+  top: {
+    sX: 553, 
+    sY: 0, 
+
+  },
+
+  bottom : {
+    sX: 503, 
+    sY : 0,
+  },
+
+  w: 53,
+  h: 400,
+  dx: 2, 
+  gap: 80,
+  maxYPos: -150,
+  position: [],
+
+  draw: function(){
+
+    for( let i = 0; i < this.position.length; i++ ) {
+      let p = this.position[i];
+
+      let topYPos = p.y;
+
+      let bottomYPos = p.y + this.h + this.gap;
+
+      cxt.drawImage(
+        sprite,
+        this.top.sX,
+        this.top.sY,
+        this.w,
+        this.h,
+        p.x,
+        topYPos,
+        this.w,
+        this.h
+      );
+      cxt.drawImage(
+        sprite,
+        this.bottom.sX,
+        this.bottom.sY,
+        this.w,
+        this.h,
+        p.x,
+        bottomYPos,
+        this.w,
+        this.h
+      );
+
+    }
+
+  },
+
+  update: function() {
+
+    if(state.current != state.game) return;
+
+    //new pipes position
+
+    if( frames % 100 == 0 ) {
+      this.position.push({
+        x: cav.width,
+        y: this.maxYPos * ( Math.random() +1 )
+      })
+
+    }
+
+    for(let i = 0; i < this.position.length; i++ ){
+        
+      let p =  this.position[i]
+
+      p.x -= this.dx;
+
+      if( p.x + this.w <= 0) {
+        this.position.shift()
+      }
+      console.log(this.position)
+
+    }
+  }
+
+}
+
 function update() {
   bird.update();
   fg.update();
+  pipes.update();
 }
 
 function draw() {
@@ -256,6 +343,8 @@ function draw() {
   cxt.fillRect(0, 0, cav.width, cav.height);
 
   bg.draw();
+
+  pipes.draw();
 
   fg.draw();
 

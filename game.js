@@ -10,6 +10,21 @@ var sprite = new Image();
 
 sprite.src = "./image/sprite.png";
 
+var SCORE = new Audio();
+SCORE.src = "./audio/sound_score.wav";
+
+var DIE = new Audio();
+DIE.src = "./audio/sound_die_2.wav";
+
+var START = new Audio();
+START.src = "./audio/sound_start.wav";
+
+var HIT = new Audio();
+HIT.src = "./audio/sound_hit.wav";
+
+var FLAP = new Audio();
+FLAP.src = "./audio/sound_flap.wav";
+
 var state = {
   current: 0,
   getReady: 0,
@@ -21,10 +36,11 @@ function clickHandler() {
   switch (state.current) {
     case state.getReady:
       state.current = state.game;
-
+      START.play();
       break;
 
     case state.game:
+      FLAP.play();
       bird.flap();
 
       break;
@@ -234,13 +250,16 @@ var bird = {
       this.y = cav.height - fg.h - this.h / 2;
       this.animationIndex = 1;
       if (state.current === state.game) {
+        DIE.play();
         state.current = state.over;
+        HIT.play();
       }
     }
   },
 
   flap: function () {
     this.speed = -this.jump;
+    FLAP.play();
   },
 };
 
@@ -319,8 +338,10 @@ var pipes = {
         bird.x - bird.radius < p.x + this.w &&
         bird.y + bird.radius > p.y &&
         bird.y - bird.radius < p.y + this.h
-      ){
+      ) {
         state.current = state.over;
+        HIT.play();
+        DIE.play();
       }
 
       if (
@@ -328,60 +349,54 @@ var pipes = {
         bird.x - bird.radius < p.x + this.w &&
         bird.y + bird.radius > bottomPipesPos &&
         bird.y - bird.radius < bottomPipesPos + this.h
-      ){
+      ) {
         state.current = state.over;
+        HIT.play();
+        DIE.play();
       }
 
+      if (p.x + this.w <= 0) {
+        this.position.shift();
 
-     if (p.x + this.w <= 0) {
-          this.position.shift();
+        score.value += 1;
 
-          score.value +=1;
+        SCORE.play();
 
-          score.best = Math.max(score.value, score.best);
+        score.best = Math.max(score.value, score.best);
 
-          localStorage.setItem('best', JSON.stringify(score.best))
-
+        localStorage.setItem("best", JSON.stringify(score.best));
       }
       console.log(this.position);
     }
   },
 };
 
-
 var score = {
-  best: parseInt(localStorage.getItem('best')) || 0,
-  value : 0,
+  best: parseInt(localStorage.getItem("best")) || 0,
+  value: 0,
 
-  draw: function() {
-
-    cxt.fillStyle = '#FFF';
+  draw: function () {
+    cxt.fillStyle = "#FFF";
     cxt.strokeStyle = "#000";
 
-    if(state.current === state.game) {
-
+    if (state.current === state.game) {
       cxt.lineWidth = 2;
       cxt.font = " 35px IMPACT ";
 
-      cxt.fillText(this.value, cav.width/2, 50);
-      cxt.strokeText(this.value, cav.width/2, 50);
-
-    }else if( state.current === state.over ) {
-
+      cxt.fillText(this.value, cav.width / 2, 50);
+      cxt.strokeText(this.value, cav.width / 2, 50);
+    } else if (state.current === state.over) {
       cxt.lineWidth = 2;
       cxt.font = " 20px IMPACT ";
 
       cxt.fillText(this.value, 225, 186);
       cxt.strokeText(this.value, 225, 186);
 
-
       cxt.fillText(this.best, 225, 228);
       cxt.strokeText(this.best, 225, 228);
     }
-
-  }
-
-}
+  },
+};
 
 function update() {
   bird.update();
@@ -401,11 +416,10 @@ function draw() {
 
   bird.draw();
 
-  
   getReady.draw();
-  
+
   gameOver.draw();
-  
+
   score.draw();
 }
 

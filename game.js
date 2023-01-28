@@ -33,6 +33,7 @@ function clickHandler() {
       bird.speed = 0;
       bird.rotation = 0;
       pipes.position = [];
+      score.value = 0;
       state.current = state.getReady;
       break;
   }
@@ -334,11 +335,53 @@ var pipes = {
 
      if (p.x + this.w <= 0) {
           this.position.shift();
+
+          score.value +=1;
+
+          score.best = Math.max(score.value, score.best);
+
+          localStorage.setItem('best', JSON.stringify(score.best))
+
       }
       console.log(this.position);
     }
   },
 };
+
+
+var score = {
+  best: parseInt(localStorage.getItem('best')) || 0,
+  value : 0,
+
+  draw: function() {
+
+    cxt.fillStyle = '#FFF';
+    cxt.strokeStyle = "#000";
+
+    if(state.current === state.game) {
+
+      cxt.lineWidth = 2;
+      cxt.font = " 35px IMPACT ";
+
+      cxt.fillText(this.value, cav.width/2, 50);
+      cxt.strokeText(this.value, cav.width/2, 50);
+
+    }else if( state.current === state.over ) {
+
+      cxt.lineWidth = 2;
+      cxt.font = " 20px IMPACT ";
+
+      cxt.fillText(this.value, 225, 186);
+      cxt.strokeText(this.value, 225, 186);
+
+
+      cxt.fillText(this.best, 225, 228);
+      cxt.strokeText(this.best, 225, 228);
+    }
+
+  }
+
+}
 
 function update() {
   bird.update();
@@ -358,9 +401,12 @@ function draw() {
 
   bird.draw();
 
+  
   getReady.draw();
-
+  
   gameOver.draw();
+  
+  score.draw();
 }
 
 function animate() {

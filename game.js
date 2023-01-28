@@ -114,15 +114,11 @@ var fg = {
     );
   },
 
-  update : function() {
-
-    if(state.current === state.game){
-
-      this.x = ( this.x - this.dx ) % (this.w / 2)
+  update: function () {
+    if (state.current === state.game) {
+      this.x = (this.x - this.dx) % (this.w / 2);
     }
-
-  }
- 
+  },
 };
 
 var getReady = {
@@ -191,26 +187,27 @@ var bird = {
   gravity: 0.25,
   jump: 4.6,
   animationIndex: 0,
-  rotation:0,
+  rotation: 0,
+  radius: 12,
 
   draw: function () {
     let bird = this.animations[this.animationIndex];
 
     cxt.save();
-    cxt.translate(this.x, this.y)
-    cxt.rotate(this.rotation)
+    cxt.translate(this.x, this.y);
+    cxt.rotate(this.rotation);
     cxt.drawImage(
       sprite,
       bird.sX,
       bird.sY,
       this.w,
       this.h,
-     - this.w / 2,
-     - this.h / 2,
+      -this.w / 2,
+      -this.h / 2,
       this.w,
       this.h
     );
-    cxt.restore()
+    cxt.restore();
   },
 
   update: function () {
@@ -225,12 +222,11 @@ var bird = {
       this.speed += this.gravity;
       this.y += this.speed;
 
-      if(this.speed < this.jump){
-        this.rotation = - 25 * DEGREE;
-      }else {
-        this.rotation =  45 * DEGREE;
+      if (this.speed < this.jump) {
+        this.rotation = -25 * DEGREE;
+      } else {
+        this.rotation = 45 * DEGREE;
       }
-
     }
 
     if (this.y + this.h / 2 > cav.height - fg.h) {
@@ -243,32 +239,30 @@ var bird = {
   },
 
   flap: function () {
-    this.speed = - this.jump;
+    this.speed = -this.jump;
   },
 };
 
 var pipes = {
   top: {
-    sX: 553, 
-    sY: 0, 
-
+    sX: 553,
+    sY: 0,
   },
 
-  bottom : {
-    sX: 503, 
-    sY : 0,
+  bottom: {
+    sX: 503,
+    sY: 0,
   },
 
   w: 53,
   h: 400,
-  dx: 2, 
-  gap: 80,
+  dx: 2,
+  gap: 100,
   maxYPos: -150,
   position: [],
 
-  draw: function(){
-
-    for( let i = 0; i < this.position.length; i++ ) {
+  draw: function () {
+    for (let i = 0; i < this.position.length; i++) {
       let p = this.position[i];
 
       let topYPos = p.y;
@@ -297,40 +291,54 @@ var pipes = {
         this.w,
         this.h
       );
-
     }
-
   },
 
-  update: function() {
-
-    if(state.current != state.game) return;
+  update: function () {
+    if (state.current != state.game) return;
 
     //new pipes position
 
-    if( frames % 100 == 0 ) {
+    if (frames % 100 == 0) {
       this.position.push({
         x: cav.width,
-        y: this.maxYPos * ( Math.random() +1 )
-      })
-
+        y: this.maxYPos * (Math.random() + 1),
+      });
     }
 
-    for(let i = 0; i < this.position.length; i++ ){
-        
-      let p =  this.position[i]
+    for (let i = 0; i < this.position.length; i++) {
+      let p = this.position[i];
 
       p.x -= this.dx;
 
-      if( p.x + this.w <= 0) {
-        this.position.shift()
+      let bottomPipesPos = p.y + this.h + this.gap;
+
+      if (
+        bird.x + bird.radius > p.x &&
+        bird.x - bird.radius < p.x + this.w &&
+        bird.y + bird.radius > p.y &&
+        bird.y - bird.radius < p.y + this.h
+      ){
+        state.current = state.over;
       }
-      console.log(this.position)
 
+      if (
+        bird.x + bird.radius > p.x &&
+        bird.x - bird.radius < p.x + this.w &&
+        bird.y + bird.radius > bottomPipesPos &&
+        bird.y - bird.radius < bottomPipesPos + this.h
+      ){
+        state.current = state.over;
+      }
+
+
+     if (p.x + this.w <= 0) {
+          this.position.shift();
+      }
+      console.log(this.position);
     }
-  }
-
-}
+  },
+};
 
 function update() {
   bird.update();
